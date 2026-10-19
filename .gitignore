@@ -1,0 +1,7 @@
+__pycache__/
+logs/
+.lock
+*.bak
+*.tmp
+state.json
+dashboard.html

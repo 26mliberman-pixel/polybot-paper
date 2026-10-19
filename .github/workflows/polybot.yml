@@ -1,0 +1,31 @@
+name: polybot
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+concurrency:
+  group: polybot
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: restore state
+        run: |
+          mkdir -p logs
+          git fetch origin state && git checkout origin/state -- state.json || echo "no prior state"
+      - name: run cycle
+        run: python3 polybot.py run
+      - name: publish state
+        run: |
+          git config user.name "polybot"
+          git config user.email "polybot@users.noreply.github.com"
+          git checkout --orphan state-new
+          git reset
+          git add -f state.json dashboard.html
+          git commit -m "state $(date -u +%FT%TZ)"
+          git push -f origin HEAD:state
